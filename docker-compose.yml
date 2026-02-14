@@ -1,0 +1,54 @@
+services:
+  evolution_api:
+    image: atendai/evolution-api:v2.1.1
+    container_name: evolution_api
+    restart: always
+    volumes:
+      - evolution_store:/evolution/store
+    environment:
+      - SERVER_URL=${SERVER_URL}
+      - AUTHENTICATION_API_KEY=${AUTHENTICATION_API_KEY}
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      # Nos conectamos a TU base de datos Postgres existente
+      - DATABASE_CONNECTION_URI=postgresql://${DB_USER}:${DB_PASSWORD}@${POSTGRES_HOST}:5432/evolution_db
+      - DATABASE_CLIENT_NAME=evolution_v2
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://evolution_redis:6379/0
+      - CACHE_REDIS_PREFIX=evolution:
+      - DEL_INSTANCE_ON_LOGOUT=false
+      - QB_LIMIT=30
+    networks:
+      - default
+      - proxy # Red donde está Traefik
+      - postgres # Red donde está Postgres
+    depends_on:
+      - evolution_redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evolution.rule=Host(`${SERVER_URL:?error}`.replace('https://', '').replace('http://', ''))"
+      - "traefik.http.routers.evolution.entrypoints=websecure"
+      - "traefik.http.routers.evolution.tls.certresolver=myresolver"
+      - "traefik.http.services.evolution.loadbalancer.server.port=8080" # Evolution v2 usa 8080 internamente
+
+  evolution_redis:
+    image: redis:7-alpine
+    container_name: evolution_redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - evolution_redis_data:/data
+    networks:
+      - default
+
+volumes:
+  evolution_store:
+  evolution_redis_data:
+
+networks:
+  proxy:
+    external: true
+    name: traefik-network # Ajusta esto al nombre real de tu red Traefik (visto en 'docker network ls')
+  postgres:
+    external: true
+    name: postgres-network # Ajusta esto al nombre real de tu red Postgres
