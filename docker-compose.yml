@@ -10,7 +10,6 @@ services:
       - AUTHENTICATION_API_KEY=${AUTHENTICATION_API_KEY}
       - DATABASE_ENABLED=true
       - DATABASE_PROVIDER=postgresql
-      # Nos conectamos a TU base de datos Postgres existente
       - DATABASE_CONNECTION_URI=postgresql://${DB_USER}:${DB_PASSWORD}@${POSTGRES_HOST}:5432/evolution_db
       - DATABASE_CLIENT_NAME=evolution_v2
       - CACHE_REDIS_ENABLED=true
