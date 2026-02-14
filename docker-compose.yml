@@ -25,7 +25,7 @@ services:
       - evolution_redis
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.evolution.rule=Host(`${SERVER_URL:?error}`.replace('https://', '').replace('http://', ''))"
+      - "traefik.http.routers.evolution.rule=Host(`${API_DOMAIN:?error}`)"
       - "traefik.http.routers.evolution.entrypoints=websecure"
       - "traefik.http.routers.evolution.tls.certresolver=myresolver"
       - "traefik.http.services.evolution.loadbalancer.server.port=8080" # Evolution v2 usa 8080 internamente
